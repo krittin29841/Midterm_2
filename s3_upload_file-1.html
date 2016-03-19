@@ -1,0 +1,98 @@
+<html>
+<head>
+	<script src="https://code.jquery.com/jquery-2.2.2.min.js"   integrity="sha256-36cp2Co+/62rEAAYHLmRCPIych47CvdM+uTBJwSzWjI="   crossorigin="anonymous"></script>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.0.0-rc11.min.js"></script>
+  <script type="text/javascript">
+  // See the Configuring section to configure credentials in the SDK
+  AWS.config.update({
+      accessKeyId: 'AKIAIPCQSGDMAR5WVSRQ',
+      secretAccessKey: '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',
+      region: 'us-east-1'
+  });
+  </script>
+</head>
+<body>
+	<div class='container'>
+		<h1>File Uploader</h1>
+		<center>
+			<input type="file" id="file-chooser" />
+		  <br> 
+		  <div class="row">
+			  <div class="col-md-4"></div>
+			  <div class="col-md-4">
+			  	<button id="upload-button" class="btn btn-primary btn-lg btn-block">Upload</button>
+			  </div>
+			  <div class="col-md-4"></div>
+			</div>
+		</center>
+		<br>
+	  <div id="results"></div>
+	  <script type="text/javascript">
+	  /*global AWS*/
+		var s3BucketName = 'testuploadd'
+		var bucket = new AWS.S3({
+		  params: {
+		    Bucket: s3BucketName
+		  }
+		}) // BucketName
+		var fileChooser = document.getElementById('file-chooser')
+		var button = document.getElementById('upload-button')
+		var results = document.getElementById('results')
+		button.addEventListener('click', function () {
+		  var file = fileChooser.files[0]
+		  if (file) {
+		    results.innerHTML = ''
+
+		    var params = {
+		      Key: file.name,
+		      ContentType: file.type,
+		      Body: file
+		    }
+		    bucket.putObject(params, function (err, data) {
+		      if (err) {
+		        results.innerHTML = err
+		      } else {
+		        //results.innerHTML = 'UPLOADED.'
+		        results.innerHTML = '<br><div class="alert alert-success" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Well done!</strong> Upload successfully.</div>'
+		      }
+		    })
+		  } else {
+		    results.innerHTML = 'Nothing to upload.'
+		    results.innerHTML = '<br><div class="alert alert-warning alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Warning!</strong> Nothing to upload.</div>'
+		  }
+		}, false)
+	  </script>
+	  <div id="status"></div>
+	  <ul id="objects"></ul>
+	  <script type="text/javascript">
+		  /*global AWS*/
+			var bucket = new AWS.S3({
+			  params: {
+			    Bucket: s3BucketName
+			  }
+			}) // BucketName
+			bucket.listObjects(function (err, data) {
+			  if (err) {
+			    document.getElementById('status').innerHTML = 'Could not load objects from S3'
+			  } else {
+			    document.getElementById('status').innerHTML = '<center>You have ' + data.Contents.length + ' items in your S3</center><br>'
+			    for (var i = 0; i < data.Contents.length; i++) {
+			      console.log(data.Name)
+			      // document.getElementById('objects').innerHTML +='<li>' + data.Contents[i].Key + "<img src='https://s3-ap-northeast-1.amazonaws.com/"+data.Name+"/"+data.Contents[i].Key+"'/>" + '</li>'
+			      // document.getElementById('objects').innerHTML += '<center>' + "<img src='https://s3.amazonaws.com/" + data.Name + '/' + data.Contents[i].Key + "'/>" + '</center><br>'
+			      document.getElementById('objects').innerHTML += '<pre>' + data.Contents[i].Key + '</pre>'
+			    }
+			  }
+			})
+	  </script>
+	</div>
+  
+</body>
+</html>
